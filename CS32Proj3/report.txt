@@ -1,0 +1,295 @@
+Caroline Huynh
+CS 32 Project 3 
+
+My goblin movement function is not recursive. It moves randomly. 
+
+---------DESIGN OF PROGRAM------
+OVERALL: 
+When Game(15) is called, the Game constructor creates a Dungeon and a Level (initially Level Zero). 
+The Dungeon is able to add and keep track of a Level and a Player, which interacts with the objects and 
+Monsters contained in a Level class. The Player interacts with these objects through its member functions
+and other helper functions, while the user is able to input characters and take turns through Game.play(), 
+which contains what the program should do for one turn that the user inputs a value for
+and terminates once the Player is dead. 
+
+CLASSES 
+- Game 
+The Game class is used to allow the player to actually interact with the program. 
+It contains a Dungeon pointer, which is used in accessing, setting and manipulating
+a Player and a Level class when implementing the play function of Game. 
+The Game class constructor creates a new Dungeon, Level, Player and populates the dungeon with
+monsters according to the level that is created and randomly generated objects, 
+including scrolls and weapons. The play function displays the corresponding grid for 
+the level of the dungeon as well as the stats of the player and actions taken by actors.
+The play function allows the player to take turns as long as the player is not marked as dead. 
+The takePlayerTurn function allows a player to input a character, and displays the corresponding actions
+(including moving up/down/left/right, attack, accessing inventory, quit game, cheat). 
+
+- Dungeon 
+The Dungeon class is used to keep track of where the Player is and what Level the user is on. It does this 
+by containing a pointer to Player and Level, and being able to add, set and access those as necessary. A 
+Dungeon is necessary because we want the user to be able to go through multiple Levels rather than only going 
+through one Level.
+
+- Level 
+The Level class displays the grid to the user, and contains the Monsters and GameObjects for a given Level. It
+is used to keep track of what Monsters and objects are one single Level, and displays the movements of each 
+character. 
+
+
+- Actor 
+The Actor class is the base class of Player and Monster, and contains the items that both Players
+and Monster have in common. This include their HP, max HP, strength, dexterity, armor, name
+position in the level, and a Weapon pointer signifying what weapon the actor is holding. It also
+contains the functions that both a player and monster need, such as attack, setting their 
+respective weapons, and setting their respective stats. Its constructor takes in a row and column
+to signify its position. The Actor class is used to avoid repetitiveness in Player and Monster classes,
+as they share many of the same base characteristics.  
+
+- Player
+Player
+The Player class is a derived class of Actor, and as such has the public functions of Actor included
+in what a player can use. In addition to that, a player has a vector of GameObject pointers, where it
+stores the objects it has picked up. A player also has a Dungeon pointer to keep track of where it is for the whole game. 
+This was chosen over a Level pointer because a Level pointer would not be permanent when the player descended down the stairs
+into a different Level. Players can add items to their inventory by taking in a GameObject pointer, call their Inventory,
+move in a certain direction given by the user, and be killed, which ends the program. 
+
+- Monster
+The Monster class is a derived class of Actor, and thus has the public functions of Actor, including setting HP
+and setting the Weapon. This is to avoid repetitiveness. Its constructor takes in a Level pointer to signify what 
+Level the Monster is found on, and integers for its position and type. There is a move function within Monster, 
+as a Monster moves different from a Player and thus needs a different implementation. There is also a bool 
+representing the probability a monster will drop an item when killed, which a player does not do when killed. 
+
+- Bogeyman, Snakewoman, Dragon, Goblin 
+These are all derived classes of Monsters because they can all move, need a pointer to which Level they are on to 
+access them, and require a bool to represent what action happens after they are killed. However, they are derived classes
+as each Monster moves in a different way based on their sense of smell, and may drop different items after they are 
+killed. 
+
+- GameObjects 
+GameObjects are used to create the various types of objects found on various levels of the game, such as weapons or scrolls. 
+As such, they have a Level pointer to signify which Level they are in the Dungeon, and take in integers representing their position
+and type of GameObject they are. Unlike Monsters, Players or Actors, GameObjects do not move and thus do not require the functions that Actors
+have. A GameObject class is necessary for displaying the inventory of a Player, as a Player can pick up both Scrolls and Weapons 
+
+- Scroll, Weapon 
+These are derived classes of GameObject, as they both have similar characteristics and can be picked up and used by the 
+Player.
+  - Weapons all have the ability to harm a Player when used to attack, so it needs integers and functions to store 
+and set the Damage Amount and Dexterity Bonus of each Weapon. Weapon are differientiated in the Weapon Constructor, which uses a switch to find out 
+what type of weapon to make based on the integer put in for type. Every Weapon has a Actor pointer signifying who is holding the 
+weapon.If there is no Actor holding the Weapon, it is marked with nullptr. This is the case for Weapons found in the Level, where Players can 
+later pick it up. Weapon has a function that calculates whether an attack has landed on the defender or not, which is used in the attack function of 
+Actor. 
+  - Scrolls can only be held by Players, and thus has a Player pointer member variable to signify who is holding it. If the Scroll is just on the
+Level, the Player pointer variable is marked as nullptr. Similar to Weapon's constructor, Scroll also takes in a Level pointer and integers 
+representing its position and type. Based on a switch statement, it assigns the name of the scroll. Scroll also contains a useScroll function that changes
+the stats of the Player, effectively "using" the Scroll. 
+
+- helper (header file & cpp for attemptMove)
+This is an additional header file I created in order to help create an attemptMoves function. attemptMoves 
+
+- constants (header file) 
+This is an additional header file I created in order to keep track of necessary constants used in the program, such as signifying if a cell was empty or had a 
+wall, the type of object, or the name of an object. 
+
+------NON TRIVIAL ALGORITHMS---------
+Game Constructor 
+  - creates a new Level 
+  - adds Player to random position 
+  - populates with monsters in random positions
+  - populates with objects in random positions 
+
+Game::play()
+  display the grid 
+  while the player is not dead 
+      store message from takePlayerTurn function 
+      if player is dead, 
+	break loop
+      delete dead monsters and move monsters 
+  display updated grid 
+
+Game::takePlayerTurn
+enter a character 
+  if character is one of the arrows 
+      figure out the direction 
+      move player in decoded direction 
+  if want to pick up object 
+      check if there is an object at position 
+           check to see if room in inventory
+		add to inventory
+		update display to show object has been picked up 
+      no room at position, return 
+  //did not implement w,r,
+  if want to display inventory 
+      clearScreen
+      for every element of player's inventory
+         check if Weapon 
+	     output character and weapon name
+         if not Weapon, then Scroll 
+             output scroll name 
+      go back to display
+  if want quit, exit game
+  if want cheat, set player's stats
+  if no valid input, move monsters 
+
+Dungeon::addPlayer
+  check if position out of bounds
+    do not add 
+  check if player exists
+    do not add 
+  add new Player
+  update cell
+
+Level Constructor 
+  checks to see if boundaries are valid
+  fills the left, right cols and top, bot rows with walls 
+  fill the rest with empty space 
+
+Level Destructor 
+  create iterator at the start of Level's monster vector 
+  while iterator not at end 
+     erase iterator 
+  create iterator at start of Level's object vector 
+  while iterator not at end
+     erase iterator 
+
+Level::display
+  fill grid with stairs, walls and space
+  for each monster
+    determine what type monster and output type
+  for each object 
+    determine if weapon or scroll 
+    output type 
+  if player exist 
+     get player position and populate cell 
+  clear old screen 
+  draw filled grid
+  write info 
+
+Level::addMonster and Level::addObject
+  check if valid position 
+  if can add to object vector 
+    figure out what type 
+    add to vector and update cell
+
+Level::getActor
+ check if player is at position entered 
+ check Monster vector for position entered 
+
+Level::deleteDeadMons()
+ create iterator at monster vector begin 
+ while iterator not at end
+   check if iterator is dead 
+      erase iterator 
+
+Actor::attack(Actor* defender)
+ check if attack hits 
+   set defenders damage points 
+ if defender dies
+   return message
+ if normal attack 
+   return message
+
+For Bogeyman, Snakewoman, Dragon::move() (not implement Goblin)
+ calculate distance
+   if distance is less than smell 
+     check if on same column 
+       check if player on row above
+         move in direction 
+     if on same row
+       check player position
+        move towards player 
+     if on different rows 
+       move closer
+
+Player::pickObj
+ check if object is nullptr 
+ if inventory has room 
+    find out type 
+    output message 
+    store in inventory 
+ output message too full 
+
+attemptMove(Level* a, Actor* actor, int dir, int r, int c)
+ store position 
+ set cell to empty 
+ check dir cases 
+   update position 
+ get cell status of updated position 
+ check position cases 
+    if wall, return 
+    if actor
+       find what kind of actor is at old and new position 
+          attack or do nothing 
+    if empty or object 
+       update position 
+    if stairs 
+       if level is less than 4 
+          make new Level 
+          store old Level
+          set new Level
+          make new Player 
+          delete old level
+  update cell 
+
+-------FEATURES NOT IMPLEMENTED-------
+- NO Magic fangs of sleep OR probability of player/defender falling asleep as result 
+- Probability of monsters dropping weapons after dying
+- Reading scroll (r)
+   - I had planned to implement this by first displaying the inventory. Then allowing the user to enter
+     a character, and finding that corresponding character in my vector of GameObjects for Player (aka 
+     my Inventory). Once found, I would use dynamic allocation (similar to Inventory) to make sure 
+     the item selected was actually a scroll. After, I would use the useScroll function I implemented 
+     in my Scroll class to have the Player actually read and use the scroll. Then I would delete the
+     Scroll, most likely with a helper function called deleteScroll() that would go through the inventory
+     vector of Player to find the Scroll I was looking for. 
+
+- wielding a weapon (w) 
+   - I had planned to implement this by first displaying the inventory. Then allowing the user to enter
+     a character, and finding that corresponding character in my vector of GameObjects for Player (aka 
+     my Inventory). Once found, I would check that selection made by the user was a Weapon by using dynamic
+     allocation and then store the current Weapon pointer that Player has in the Inventory. 
+     After, I use the wieldWeapon function I implemented in my Player class to have the Player now hold 
+     the new Weapon. 
+- Rooms & Corridors 
+   - I had planned to implement this by revising my display function to print out walls to generate 
+     randomly sized rooms, and using a modified version of pathExists to find a corrider to a room. 
+
+--------LIST OF KNOWN BUGS/ INEFFICIENCIES------------
+- When killing monsters, sometimes a runtime error will occur. 
+I believe this is due to an iterator being called that is out of range of the vector storing the Monsters, 
+occuring in the deleteDeadMons function in my Level class - specifically line 447. In g32, this manifests
+in the form of a segmentation error, which crashes the program. 
+ 
+- Level Destructor 
+The Level Destructor may result in a runtime error. This is at infrequent intervals, and I do not know
+what exactly pinpoints this. However, I know it occurs as a result of one of the loops used in the Level 
+Destructor to delete the vector of monsters or delete the vector of objects. The iterator may be incremented 
+after all the elements have been deleted, thus causing an error and crash. 
+
+- Multiple Memory Leaks in g32 and Wrerrors 
+When testing on g32, I noticed multiple memory leaks after the program was finished. Additionally,
+before testing the project, multiple Wrerrors occur, which is a result of initializing member variables of classes
+out of order. Though this has no effect on the implementation of the program, I wanted to note it as 
+something that may occur when tested on g32. *On g32, I sometimes was unable to test my program because of 
+it said permission Denied. I do not know what is causing this error, though I think it could be an error 
+because of my connection to the VPN. 
+
+- Picking up an Object (selecting g as an action) 
+This results in the whole program freezing, and being unable to take in any other commands. The player
+and monsters stop moving, and the program as a whole is unresponsive. I believe this is caused by 
+an error in identifying whether a position has a GameObject or not, which I use my getObject function from 
+Level to check. Within getObject, I go through the vector of Level's GameObjects and see if their position
+matches the position I am trying to find. While doing this, I think the iterator may be trying to access
+an invalid element, such as past the end of the vector. 
+
+- Descending Down A Stairway (selecting > as an action) 
+This results in a segmentation fault in g32. I believe this is due to the Level destructor not properly
+destroying all of its dynamically allocated member variables, as stated above. This could be fixed 
+by re-examining the iterators used to loop through the vector of Monsters and Objects contained in a 
+Level class. However, if you wish to test if certain monsters appear in certain levels, Line 15 of Game.cpp
+is hardcoded to created a pointer to a Level zero. The parameter 0 can be changed to signify which Level 
+you would like to change it to for testing purposes. 
